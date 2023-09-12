@@ -14,4 +14,7 @@ A simple flask server that deploies UNIST HeXA services automatically
 
 3. Add workflow (see example_workflow.yml)
 
-4. Push or Merge PR to main
+4. Create Dockerfile from the template (see Dockerfile.example)
+    - [Important]: the permanent resources (such as DB) must be located in /resources folder! otherwise it will be clean up at every deployment
+
+5. Push or Merge PR to main
