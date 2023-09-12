@@ -1,0 +1,18 @@
+### Base Image 
+FROM <your base image>
+
+### Install the requirements
+RUN apt-get -y update && apt-get -y <your dependencies>
+#RUN git clone https://github.com/junwha0511/hexa-delivery-backend
+
+
+###! Disable Cache (Don't remove this)
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+
+### Clone and Build your service
+RUN <clone instruction>
+RUN <build instruction>
+
+### Entry point
+WORKDIR <your service home>
+ENTRYPOINT [<run your service>]
