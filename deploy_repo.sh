@@ -2,6 +2,7 @@
 CWD=$1
 SERVICE=$2
 PORT_INFO=$3
+VOLUME_ARG=$4
 cd $CWD/$SERVICE
 # Build Image
 docker build -t $SERVICE  ./
@@ -9,6 +10,4 @@ docker build -t $SERVICE  ./
 # Run container
 docker stop $SERVICE
 docker rm $SERVICE
-echo 'docker run -it -v "$CWD/$SERVICE/resources:/resources" -p$PORT_INFO -d $SERVICE'
-id=$(docker run -it -v "$CWD/$SERVICE/resources:/resources" -p$PORT_INFO -d $SERVICE)
-docker rename $id $SERVICE
+docker run -it $VOLUME_ARG -p$PORT_INFO -d --name $SERVICE $SERVICE

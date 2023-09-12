@@ -30,11 +30,18 @@ def deploy():
     cursor = connect.cursor()
     
     # Get the service info
-    cursor.execute("SELECT repo, deployed_commit, port_info FROM service WHERE name=?", (service_name,))
+    cursor.execute("SELECT repo, deployed_commit, port_info, volumes FROM service WHERE name=?", (service_name,))
     s = cursor.fetchone()
     if s == None:
         return {RES_STATUS_KEY: status.HTTP_404_NOT_FOUND, RES_ERROR_MESSAGE: "service not exists"}, status.HTTP_404_NOT_FOUND
-    repo, deployed_commit, port_info = s
+    repo, deployed_commit, port_info, volume_string = s
+    
+    # Verify volume String
+    volumes = parse_volumes(volume_string)
+    volumes_verify_result = verify_volumes(volumes)
+    if volumes_verify_result != None:
+        return volumes_verify_result
+    volume_arg = map_volume_to_local_dir(service_name, volumes)
     
     # Clone or pull repo
     subprocess.call(["bash", "./update_repo.sh", CWD, service_name, repo])
@@ -51,7 +58,7 @@ def deploy():
     connect.commit()
     
     # Deploy as a docker container (subprocess)
-    subprocess.call(["bash", "./deploy_repo.sh", CWD, service_name, port_info])
+    subprocess.call(["bash", "./deploy_repo.sh", CWD, service_name, port_info, volume_arg])
     
     res = {}
     res[RES_STATUS_KEY] = status.HTTP_200_OK
@@ -67,6 +74,7 @@ def enroll():
     SERVICE_NAME_PARAM_KEY = "service"
     SERVICE_REPO_PARAM_KEY = "repo"
     SERVICE_PORT_INFO_PARAM_KEY = "port_info"
+    SERVICE_VOLUMES_PARAM_KEY = "volumes"
     
     req_header = request.headers
     req_param = request.form
@@ -77,13 +85,14 @@ def enroll():
         return header_verify_result
     if req_header[ACCESS_TOKEN_HEADER_KEY] != ACCESS_TOKEN:
         return {RES_STATUS_KEY: status.HTTP_403_FORBIDDEN, RES_ERROR_MESSAGE: "invalid access token"}, status.HTTP_403_FORBIDDEN
-    param_verify_result = verify_parameters([SERVICE_NAME_PARAM_KEY, SERVICE_REPO_PARAM_KEY], req_param.keys())
+    param_verify_result = verify_parameters([SERVICE_NAME_PARAM_KEY, SERVICE_REPO_PARAM_KEY, SERVICE_PORT_INFO_PARAM_KEY, SERVICE_VOLUMES_PARAM_KEY], req_param.keys())
     if param_verify_result != None:
         return param_verify_result
     
     service = req_param[SERVICE_NAME_PARAM_KEY]
     repo = req_param[SERVICE_REPO_PARAM_KEY]
     port_info = req_param[SERVICE_PORT_INFO_PARAM_KEY]
+    volumes = req_param[SERVICE_VOLUMES_PARAM_KEY]
     
     # Connect to DB
     connect = sqlite3.connect(DATABASE, isolation_level=None)
@@ -93,7 +102,7 @@ def enroll():
     cursor.execute('SELECT * FROM service WHERE name=?', (service,))
     s = cursor.fetchall()
     if(len(s)==0): # New Service
-        cursor.execute("INSERT INTO service(name, repo, deployed_commit, port_info) VALUES (?, ?, ?, ?)", (service, repo, "NO_DEPLOYMENT_YET", port_info))
+        cursor.execute("INSERT INTO service(name, repo, deployed_commit, port_info, volumes) VALUES (?, ?, ?, ?, ?)", (service, repo, "NO_DEPLOYMENT_YET", port_info, volumes))
     cursor.execute('UPDATE service SET repo=? WHERE name=?', (repo, service,))
     
     res = {}

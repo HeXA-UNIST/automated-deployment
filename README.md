@@ -10,6 +10,7 @@ A simple flask server that deploies UNIST HeXA services automatically
     - (header) Access-Token: request to President of HeXA
     - service: service name
     - repo: github repository url
+    - volumes: the directories that you need to maintain over the lifetime of a container (e.g. "/server,/resource,...")
     - port_info: <internal port(your service)>:<deploy port(apache httpd)> (e.g. 8080:7778 if your service use 8080, and apache httpd map the subdomain to 8080 of HeXA server)
 
 3. Add workflow (see example_workflow.yml)

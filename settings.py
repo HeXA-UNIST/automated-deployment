@@ -12,3 +12,6 @@ RES_STATUS_KEY = "status"
 RES_DATA_KEY = "data"
 RES_ERROR_MESSAGE = "error_message"
 ACCESS_TOKEN = server_secure_config["ACCESS_TOKEN"]
+
+VOLUME_SEPARATOR = ","
+VOLUME_MAX_LENGTH = 30
