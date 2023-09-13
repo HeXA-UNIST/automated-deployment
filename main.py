@@ -110,4 +110,4 @@ def enroll():
     res[RES_DATA_KEY] = "The service {} was successfully created".format(service)
     return jsonify(res)
 
-app.run(host="localhost",port=5050)
+# app.run(host="localhost",port=5050)
