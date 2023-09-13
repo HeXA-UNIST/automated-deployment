@@ -22,5 +22,5 @@ doc/api/
 *.db
 *.log
 .env
-
+app.pid
 __pycache__
